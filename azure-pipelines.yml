@@ -50,6 +50,11 @@ jobs:
         bazel --host_jvm_args=-Xmx500m --host_jvm_args=-Xms500m test -s --local_resources=400,1,1.0 --test_summary=detailed --spawn_strategy=standalone --test_output=all //... 
       workingDirectory: $(Build.SourcesDirectory)/docs/examples/mono
       displayName: 'Run mono standalone test'
+ steps:
+  - task: PublishPipelineArtifact@1
+    inputs:
+      path: $(System.DefaultWorkingDirectory)/bin/WebApp
+      artifact: WebApp
     # - script: |
     #     git checkout -f
     #   workingDirectory: $(Pipeline.Workspace)/rules_dotnet_3rd_party
