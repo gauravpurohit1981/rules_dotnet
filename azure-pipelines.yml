@@ -50,27 +50,27 @@ jobs:
         bazel --host_jvm_args=-Xmx500m --host_jvm_args=-Xms500m test -s --local_resources=400,1,1.0 --test_summary=detailed --spawn_strategy=standalone --test_output=all //... 
       workingDirectory: $(Build.SourcesDirectory)/docs/examples/mono
       displayName: 'Run mono standalone test'
-    - script: |
-        git checkout -f
-      workingDirectory: $(Pipeline.Workspace)/rules_dotnet_3rd_party
-      displayName: 'Clean 3rd_party repo'
-    - script: |
-        git pull
-      workingDirectory: $(Pipeline.Workspace)/rules_dotnet_3rd_party
-      displayName: 'Pull 3rd_party repo'
+    # - script: |
+    #     git checkout -f
+    #   workingDirectory: $(Pipeline.Workspace)/rules_dotnet_3rd_party
+    #   displayName: 'Clean 3rd_party repo'
+    # - script: |
+    #     git pull
+    #   workingDirectory: $(Pipeline.Workspace)/rules_dotnet_3rd_party
+    #   displayName: 'Pull 3rd_party repo'
 
-    - script: |
-        git submodule init
-        git submodule update --recursive
-      workingDirectory: $(Pipeline.Workspace)/rules_dotnet_3rd_party
-      displayName: 'Update 3rd party repo'
-    - script: |
-        bazel clean --expunge 
-        bazel --host_jvm_args=-Xmx500m --host_jvm_args=-Xms500m build -s --local_resources=400,1,1.0 --spawn_strategy=standalone //... 
-      workingDirectory: $(Build.SourcesDirectory)/docs/examples/mono
-      displayName: 'Run 3rd_party build'
+    # - script: |
+    #     git submodule init
+    #     git submodule update --recursive
+    #   workingDirectory: $(Pipeline.Workspace)/rules_dotnet_3rd_party
+    #   displayName: 'Update 3rd party repo'
+    # - script: |
+    #     bazel clean --expunge 
+    #     bazel --host_jvm_args=-Xmx500m --host_jvm_args=-Xms500m build -s --local_resources=400,1,1.0 --spawn_strategy=standalone //... 
+    #   workingDirectory: $(Build.SourcesDirectory)/docs/examples/mono
+    #   displayName: 'Run 3rd_party build'
 
-    - script: |
-        bazel shutdown 
-      workingDirectory: $(Build.SourcesDirectory)/docs/examples/mono
-      displayName: 'Bazel shutdown'
+    # - script: |
+    #     bazel shutdown 
+    #   workingDirectory: $(Build.SourcesDirectory)/docs/examples/mono
+    #   displayName: 'Bazel shutdown'
