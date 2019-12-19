@@ -6,14 +6,6 @@ jobs:
         poolName: 'Azure Pipelines'
         vmImage: 'ubuntu-16.04'       
         systemName: 'linux'
-      windows:
-        poolName: 'home'
-        vmImage: ''
-        systemName: 'windows'
-      mac:
-        poolName: 'Azure Pipelines'
-        vmImage: 'macOS-10.13'
-        systemName: 'mac'
   pool:
     name: $(poolName)
     vmImage: $(vmImage)
@@ -69,53 +61,17 @@ jobs:
         bazel --host_jvm_args=-Xmx500m --host_jvm_args=-Xms500m test -s --local_resources=400,1,1.0 --test_summary=detailed --spawn_strategy=standalone --test_output=all //... 
       continueOnError: true
       displayName: 'Run tests'
-    - powershell: |
-        $xslt = New-Object System.Xml.Xsl.XslCompiledTransform;
-        $template = Resolve-Path "tools/converttests/n3.xslt"
-        $xslt.Load($template);
-        function doProcess($file)
-        {
-          $result = [io.path]::GetDirectoryName($file) + "/" + [io.path]::GetFileNameWithoutExtension($file) + "-junit.xml" 
-          echo "Processing $file to $result"
-          [xml]$xml = Get-Content $file
-          $n = Select-Xml "//testsuites" $xml 
-          if ($n.count -gt 0) {
-            echo "junit"
-            copy-item $file $result
-          } else {
-            echo "Transforming"
-            $xslt.Transform($file, $result)
-          }        
-        }
-        gci -r bazel-out -filter "test*.xml" -exclude "*-junit.xml" | foreach { doProcess($_.FullName) }
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'JUnit' # Options: JUnit, NUnit, VSTest, xUnit
         testResultsFiles: 'bazel-testlogs/**/test-junit.xml' 
         testRunTitle: $(systemName)
         buildPlatform: $(systemName)
-        #searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
-        #mergeTestResults: false # Optional
-        #buildPlatform: # Optional
-        #buildConfiguration: # Optional
-        #publishRunAttachments: true # Optional
-
     - script: |
         pwd
         bazel --host_jvm_args=-Xmx500m --host_jvm_args=-Xms500m test -s --local_resources=400,1,1.0 --test_summary=detailed --spawn_strategy=standalone --test_output=all //... 
       workingDirectory: $(Build.SourcesDirectory)/docs/examples/mono
       displayName: 'Run mono standalone test'
-
-    - task: PowerShell@2
-      displayName: 'Clone rules_dotnet_3rd_party if needed'
-      inputs:
-        workingDirectory: '$(Pipeline.Workspace)'
-        targetType: inline
-        script: |
-          if (-not (Test-Path -LiteralPath rules_dotnet_3rd_party)) {
-            git clone https://github.com/tomaszstrejczek/rules_dotnet_3rd_party
-          } 
-          "Done"    
     - script: |
         git checkout -f
       workingDirectory: $(Pipeline.Workspace)/rules_dotnet_3rd_party
@@ -130,16 +86,6 @@ jobs:
         git submodule update --recursive
       workingDirectory: $(Pipeline.Workspace)/rules_dotnet_3rd_party
       displayName: 'Update 3rd party repo'
-
-    - task: PowerShell@2
-      displayName: 'Patch WORKSPACE'
-      inputs:
-        workingDirectory: '$(Pipeline.Workspace)/rules_dotnet_3rd_party'
-        targetType: inline
-        script: |
-          ((Get-Content -path WORKSPACE -Raw) -replace 'e1bce290ca52f707cfa10498c85729baf01002b1','$(Build.SourceVersion)') | Set-Content -Path WORKSPACE
-          "Done"    
-
     - script: |
         bazel clean --expunge 
         bazel --host_jvm_args=-Xmx500m --host_jvm_args=-Xms500m build -s --local_resources=400,1,1.0 --spawn_strategy=standalone //... 
