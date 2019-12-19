@@ -11,38 +11,16 @@ jobs:
     vmImage: $(vmImage)
 
   steps:
-    - task: DotNetCoreInstaller@0
-      inputs:
-        packageType: 'sdk' 
-        version: '2.2.106' 
-      displayName: 'Install dotnet on Window'
-      condition: and(succeeded(), eq(variables['systemName'], 'windows'))
-
     - script: |
         echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
         curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
         sudo apt-get update && sudo apt-get install -y bazel
       displayName: 'Install dependencies'
       condition: and(succeeded(), eq(variables['systemName'], 'linux'))
-
-    - script: |
-        brew install bazel coreutils
-      displayName: 'Install dependencies'
-      condition: and(succeeded(), eq(variables['systemName'], 'mac'))
-    - script: |
-        brew cask install mono-mdk
-      displayName: 'Install mono'
-      condition: and(succeeded(), eq(variables['systemName'], 'mac'))
-       
+      
     - script: |
         bazel version
       displayName: 'Show bazel version'
-    - script: |
-        dotnet --info
-      displayName: 'Show dotnet version'
-    - script: |
-        mono --version
-      displayName: 'Show mono version'
 
     - script: |
         bazel clean --expunge 
